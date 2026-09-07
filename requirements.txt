@@ -1,0 +1,5 @@
+streamlit==1.63.0
+pandas==3.0.5
+mysql-connector-python==26.7.0
+requests==2.34.2
+python-dotenv==1.2.3
