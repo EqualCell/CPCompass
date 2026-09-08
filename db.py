@@ -16,11 +16,12 @@ def get_connection():
     if password is None:
         raise ValueError("MYSQL_PASSWORD is not configured. Copy .env.example to .env and configure MySQL.")
     return mysql.connector.connect(
-        host=os.getenv("MYSQL_HOST", "localhost"),
-        user=os.getenv("MYSQL_USER", "root"),
-        password=password,
-        database=os.getenv("MYSQL_DATABASE", "cpcompass"),
-    )
+    host=os.getenv("MYSQL_HOST", "localhost"),
+    port=int(os.getenv("MYSQL_PORT", "3306")),
+    user=os.getenv("MYSQL_USER", "root"),
+    password=password,
+    database=os.getenv("MYSQL_DATABASE", "cpcompass"),
+)
 
 
 def read_sql(query, conn, params=None):
