@@ -64,8 +64,13 @@ CREATE TABLE IF NOT EXISTS problem_topics (
 CREATE TABLE IF NOT EXISTS classic_problems (
     problem_id INT NOT NULL,
     source VARCHAR(50) NOT NULL,
+    frequency INT NOT NULL DEFAULT 0,
+
     PRIMARY KEY (problem_id, source),
-    CONSTRAINT fk_classic_problems_problem FOREIGN KEY (problem_id) REFERENCES problems(id)
+
+    CONSTRAINT fk_classic_problems_problem
+        FOREIGN KEY (problem_id)
+        REFERENCES problems(id)
 ) ENGINE=InnoDB;
 
 CREATE OR REPLACE SQL SECURITY INVOKER VIEW topic_stats AS
