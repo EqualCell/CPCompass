@@ -62,22 +62,23 @@ st.markdown(
     }
 
     .brand-mini {
-        color: #dbeafe;
-        font-weight: 700;
-        letter-spacing: -0.015em;
+        color: #e6edff;
+        font-weight: 760;
+        font-size: 1.13rem;
+        letter-spacing: -0.02em;
     }
 
     .creator-chip {
         display: inline-flex;
         align-items: center;
         gap: .45rem;
-        padding: .45rem .72rem;
+        padding: .48rem .76rem;
         border: 1px solid var(--border);
         border-radius: 999px;
         background: rgba(13,17,23,.72);
         color: var(--muted) !important;
         text-decoration: none !important;
-        font-size: .82rem;
+        font-size: .86rem;
         transition: .18s ease;
     }
 
@@ -88,20 +89,20 @@ st.markdown(
     }
 
     .hero {
-        padding: 1.25rem 0 1.45rem 0;
+        padding: 1.3rem 0 1.5rem 0;
     }
 
     .hero-kicker {
         color: var(--accent2);
         text-transform: uppercase;
         letter-spacing: .17em;
-        font-size: .7rem;
+        font-size: .74rem;
         font-weight: 800;
-        margin-bottom: .58rem;
+        margin-bottom: .62rem;
     }
 
     .hero-title {
-        font-size: clamp(2.7rem, 6vw, 5.2rem);
+        font-size: clamp(2.8rem, 6vw, 5.3rem);
         line-height: .94;
         font-weight: 850;
         letter-spacing: -.06em;
@@ -113,17 +114,17 @@ st.markdown(
 
     .hero-copy {
         color: var(--muted);
-        max-width: 760px;
-        margin-top: 1rem;
-        font-size: 1.03rem;
-        line-height: 1.68;
+        max-width: 780px;
+        margin-top: 1.05rem;
+        font-size: 1.09rem;
+        line-height: 1.7;
     }
 
     .micro-row {
         display: flex;
         flex-wrap: wrap;
-        gap: .55rem;
-        margin-top: 1rem;
+        gap: .58rem;
+        margin-top: 1.05rem;
     }
 
     .micro-pill {
@@ -131,25 +132,25 @@ st.markdown(
         background: rgba(13,17,23,.58);
         color: #a8b3c4;
         border-radius: 999px;
-        padding: .38rem .65rem;
-        font-size: .76rem;
+        padding: .4rem .69rem;
+        font-size: .8rem;
     }
 
     .section-label {
         color: #a5b4fc;
-        font-size: .74rem;
+        font-size: .78rem;
         text-transform: uppercase;
         letter-spacing: .15em;
         font-weight: 800;
-        margin-top: 2rem;
-        margin-bottom: .28rem;
+        margin-top: 2.1rem;
+        margin-bottom: .3rem;
     }
 
     .section-title {
-        font-size: 1.68rem;
+        font-size: 1.8rem;
         font-weight: 760;
         letter-spacing: -.03em;
-        margin: 0 0 .85rem 0;
+        margin: 0 0 .9rem 0;
     }
 
     .profile-strip {
@@ -157,9 +158,9 @@ st.markdown(
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        margin: .15rem 0 .75rem 0;
+        margin: .15rem 0 .8rem 0;
         color: var(--muted);
-        font-size: .9rem;
+        font-size: .96rem;
     }
 
     .profile-link {
@@ -174,15 +175,19 @@ st.markdown(
         background: linear-gradient(180deg, rgba(17,24,39,.91), rgba(13,17,23,.91));
         border: 1px solid var(--border-strong);
         border-radius: 18px;
-        padding: .35rem .45rem .55rem .45rem;
+        padding: .4rem .5rem .6rem .5rem;
         box-shadow: 0 18px 60px rgba(0,0,0,.27);
+    }
+
+    div[data-testid="stTextInput"] input {
+        font-size: 1.02rem;
     }
 
     div[data-testid="stMetric"] {
         background: linear-gradient(180deg, rgba(17,24,39,.90), rgba(13,17,23,.88));
         border: 1px solid var(--border);
         border-radius: 15px;
-        padding: .9rem 1rem;
+        padding: .95rem 1.05rem;
         transition: .18s ease;
     }
 
@@ -191,8 +196,15 @@ st.markdown(
         transform: translateY(-1px);
     }
 
-    div[data-testid="stMetricLabel"] { color: var(--muted); }
-    div[data-testid="stMetricValue"] { color: #f8fafc; }
+    div[data-testid="stMetricLabel"] {
+        color: var(--muted);
+        font-size: .94rem;
+    }
+
+    div[data-testid="stMetricValue"] {
+        color: #f8fafc;
+        font-size: 2rem;
+    }
 
     div[data-testid="stDataFrame"] {
         border: 1px solid var(--border);
@@ -204,11 +216,13 @@ st.markdown(
         border: 1px solid var(--border);
         border-radius: 14px;
         background: rgba(13,17,23,.68);
+        font-size: .98rem;
     }
 
     button[kind="primary"] {
         border-radius: 10px !important;
         font-weight: 750 !important;
+        font-size: .98rem !important;
         box-shadow: 0 8px 26px rgba(139,92,246,.18);
     }
 
@@ -219,8 +233,14 @@ st.markdown(
 
     button[data-baseweb="tab"] {
         border-radius: 10px 10px 0 0;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 1.05rem;
+        padding-right: 1.05rem;
+        font-size: .98rem;
+    }
+
+    [data-testid="stCaptionContainer"] p {
+        font-size: .9rem;
+        line-height: 1.55;
     }
 
     hr { border-color: var(--border) !important; }
@@ -234,7 +254,7 @@ st.markdown(
         justify-content: space-between;
         gap: 1rem;
         color: #64748b;
-        font-size: .82rem;
+        font-size: .86rem;
     }
 
     .footer a {
@@ -248,6 +268,8 @@ st.markdown(
     @media (max-width: 700px) {
         .topline, .footer, .profile-strip { align-items: flex-start; flex-direction: column; }
         .block-container { padding-top: 1rem; }
+        .brand-mini { font-size: 1.08rem; }
+        .section-title { font-size: 1.58rem; }
     }
     </style>
     """,
