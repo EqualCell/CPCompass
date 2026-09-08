@@ -1,216 +1,368 @@
 # CPCompass
 
-CPCompass is a Codeforces training dashboard that turns submission history into topic analytics and focused practice recommendations. It combines a relational data pipeline, transparent scoring heuristics, and a custom LRU cache in a Streamlit application.
+CPCompass is a deployed Codeforces analytics and training assistant that turns a user's submission history into topic-level weakness analysis and focused practice recommendations.
 
-## Why it exists
+It combines the Codeforces API, a normalized MySQL backend, transparent recommendation heuristics, curated C2Ladders frequency data, and a custom O(1) LRU cache behind a Streamlit interface.
 
-Choosing the next practice problem can be harder than finding a problem list. CPCompass connects past attempts, topic-level success, historical rating patterns, and problem popularity to suggest useful next steps. Its scoring rules are inspectable rather than hidden behind a model API.
+> **Status:** V1 is deployed on Railway with a persistent MySQL database.
 
-## Features
+## What CPCompass does
 
-- Load or refresh an arbitrary public Codeforces profile from the UI.
-- Switch between previously loaded profiles.
-- Inspect attempted problems, solved problems, submission totals, and topic performance.
-- Identify weaknesses using Bayesian-smoothed topic success rates.
-- Compare official ratings with heuristic era-adjusted ratings.
-- **Smart Picks:** combine topic weakness, challenge fit, and a quality signal.
-- **QuickSolve:** practice near the training rating minus 300.
-- **DeepThink:** stretch near the training rating plus 300.
-- Inspect hit/miss statistics for a custom dictionary + doubly linked list LRU cache.
+Enter any public Codeforces handle and CPCompass will:
+
+- import and refresh the user's public submission history;
+- show rating, solved/attempted counts, submissions, and solve rate;
+- estimate weak topics using Bayesian-smoothed success rates;
+- recommend unseen problems through three training modes;
+- compare official Codeforces ratings with a heuristic era-adjusted difficulty;
+- use C2Ladders problem frequency as an external curated quality signal;
+- cache recommendation results using a custom dictionary + doubly linked list LRU cache.
+
+The recommendation system is intentionally transparent: it uses inspectable heuristics rather than a black-box model API.
+
+---
+
+## Training modes
+
+### Smart Picks
+
+Targets problems that are useful for the user's current weaknesses while still being appropriately challenging.
+
+The score combines:
+
+```text
+55% topic weakness match
+35% difficulty fit
+10% curated / popularity quality signal
+```
+
+Smart Picks target roughly a **40% predicted solve probability** and return up to 15 problems.
+
+### QuickSolve
+
+Targets high-quality problems around:
+
+```text
+user rating - 300
+```
+
+Useful for fast repetitions, pattern reinforcement, and confidence-building practice.
+
+### DeepThink
+
+Targets stretch problems around:
+
+```text
+user rating + 300
+```
+
+Designed for slower, deliberate practice where the user is expected to struggle before solving.
+
+---
+
+## Recommendation methodology
+
+### 1. Bayesian-smoothed weakness
+
+Raw topic solve rates can be misleading when a user has attempted only a few problems. CPCompass shrinks each topic toward the user's overall solve rate.
+
+For overall solve rate `r`, topic solved count `s`, and topic attempted count `a`:
+
+```text
+smoothed_success = (s + 8r) / (a + 8)
+weakness_score  = 100 * (1 - smoothed_success)
+```
+
+The prior strength is currently `8`.
+
+### 2. Era-adjusted difficulty
+
+Codeforces rating distributions and contest structures have changed over time, so CPCompass estimates a modern-equivalent training rating.
+
+Problems are grouped by:
+
+```text
+contest group + problem index + era
+```
+
+The median rating for an era is compared with the median for recent contests (2024+). The difference is:
+
+- clipped to `[-300, 300]`;
+- shrunk using `n / (n + 30)` so small samples have less influence;
+- applied to the official rating;
+- rounded to the nearest 50.
+
+Therefore an era-adjusted rating can be **higher or lower** than the official rating. It is a training heuristic, not a replacement for Codeforces' official difficulty.
+
+### 3. Challenge fit
+
+CPCompass uses an Elo-style heuristic:
+
+```text
+p = 1 / (1 + 10^((effective_rating - user_rating) / 400))
+```
+
+`p` is used only as a relative challenge estimate. It is **not a calibrated machine-learning probability**.
+
+### 4. Curated quality signal
+
+`classic_import.py` imports public ladder data from C2Ladders and stores each matched problem's frequency in `classic_problems`.
+
+C2 frequency is log-normalized before it contributes to recommendation quality so a few very high-frequency problems do not dominate the ranking.
+
+When C2 data is unavailable for a problem, Codeforces solved count is used as a fallback popularity signal.
+
+---
 
 ## Architecture
 
 ```text
-Codeforces API
-  |-- user.info / user.status --> cf_api.py --> cf_import.py --|
-  |-- contest.list / problemset.problems --> problemset_import.py
-                                                            |
-                                                            v
-                                                     MySQL cpcompass
-                                                     tables + topic_stats
-                                                            |
-                                             db.py query/connection helper
-                                                            |
-                                            recommender.py --> LRU cache
-                                                            |
-                                                     app.py / Streamlit
+                       ┌──────────────────────┐
+                       │    Codeforces API     │
+                       └──────────┬───────────┘
+                                  │
+                    user.info / user.status
+                                  │
+                                  v
+                         cf_api.py / cf_import.py
+                                  │
+                                  │
+contest.list + problemset.problems│
+              │                   │
+              v                   v
+      problemset_import.py     MySQL
+              │            cpcompass database
+              │                   │
+              └───────────────────┤
+                                  │
+C2Ladders API -> classic_import.py│
+                                  │
+                                  v
+                           recommender.py
+                                  │
+                         custom LRU cache
+                                  │
+                                  v
+                            Streamlit UI
+                                  │
+                                  v
+                         Railway deployment
 ```
 
-The profile importer is also usable from the terminal. Importing its module does not prompt for input or start an import. The frontend never runs the global problemset import.
+The global problem catalog and curated C2 data are imported separately from per-user Codeforces histories.
 
-## Tech stack and tested environment
+---
 
-- Python **3.14.3**, tested on Windows
-- MySQL **8.0.46**; schema targets MySQL 8.0+
-- Streamlit **1.63.0**
-- Pandas **3.0.5**
-- mysql-connector-python **26.7.0**
-- Requests **2.34.2**
-- python-dotenv **1.2.3**
+## Database design
 
-`requirements.txt` pins the runtime packages to the verified local environment. Other Python/package combinations have not been validated. MySQL must be installed and running separately.
+| Object | Purpose |
+| --- | --- |
+| `users` | Unique Codeforces handles |
+| `problems` | Problem metadata, rating, contest information, solved count |
+| `submissions` | User submissions, verdicts, timestamps, and problem relationships |
+| `topics` | Unique Codeforces tags/topics |
+| `problem_topics` | Many-to-many relationship between problems and topics |
+| `classic_problems` | Curated source membership and C2Ladders frequency |
+| `topic_stats` | View for per-user topic attempts, solves, success rate, and wrong submissions |
 
-## Setup
+Foreign keys preserve relationships and unique keys allow importer upserts to be rerun safely.
 
-Run the following from the repository root after cloning it.
+---
 
-### 1. Create a virtual environment and install dependencies
+## Custom LRU cache
+
+`lru_cache.py` implements an LRU cache using:
+
+```text
+hash map + doubly linked list
+```
+
+Expected complexity:
+
+```text
+get: O(1)
+put: O(1)
+eviction: O(1)
+```
+
+The cache currently stores up to 10 recommendation results and is protected by an `RLock`.
+
+It is process-local memory, so:
+
+- users hitting the same Railway process can share cached recommendation entries;
+- a process restart or redeploy clears the cache;
+- MySQL data remains persistent;
+- separate app instances would have independent caches.
+
+A distributed cache such as Redis would be a natural future extension if CPCompass were scaled to multiple application instances.
+
+---
+
+## Tech stack
+
+- **Python**
+- **Streamlit**
+- **MySQL 8**
+- **Pandas**
+- **mysql-connector-python**
+- **Requests**
+- **Codeforces API**
+- **C2Ladders public ladder data**
+- **Railway** for application + MySQL deployment
+
+---
+
+## Running locally
+
+### 1. Clone and install dependencies
+
+```bash
+git clone https://github.com/EqualCell/CPCompass.git
+cd CPCompass
+python -m venv venv
+```
 
 Windows PowerShell:
 
 ```powershell
-python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
 
-If PowerShell activation is unavailable, use `venv\Scripts\python.exe` in place of `python`, and launch with `venv\Scripts\python.exe -m streamlit run app.py`.
-
-macOS/Linux equivalent commands (not part of the tested environment):
+macOS/Linux:
 
 ```bash
-python3 -m venv venv
 source venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
 ### 2. Create the MySQL schema
 
-Start MySQL and open its client with an account permitted to create the database, tables, and view:
+Open MySQL:
 
-```text
+```bash
 mysql -u root -p
 ```
 
-Enter the password at the prompt, then run from the MySQL client:
+Then:
 
 ```sql
 SOURCE schema.sql;
 ```
 
-For shells supporting input redirection, the equivalent is:
+The schema creates the `cpcompass` database, application tables, relationships, and the `topic_stats` view.
 
-```bash
-mysql -u root -p < schema.sql
-```
+### 3. Configure environment variables
 
-The schema creates `cpcompass`, six tables, and `topic_stats`. It contains no account creation, credentials, sample profiles, or database drops. `IF NOT EXISTS` preserves existing tables; it does not migrate incompatible old schemas or add missing indexes to existing tables. The view is replaced when the script is run.
-
-For a custom database name, update the `CREATE DATABASE` and `USE` statements before initial setup and use the same name in `.env`. For a remote server, include the appropriate `-h` option in the client command.
-
-### 3. Configure the environment
-
-Copy the example:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-On macOS/Linux: `cp .env.example .env`.
-
-Edit `.env` locally:
+Copy `.env.example` to `.env` and configure:
 
 ```dotenv
 MYSQL_HOST=localhost
+MYSQL_PORT=3306
 MYSQL_USER=root
-MYSQL_PASSWORD=
+MYSQL_PASSWORD=your_password
 MYSQL_DATABASE=cpcompass
 ```
 
-Set `MYSQL_PASSWORD` to the password for your MySQL account. No password is supplied by the application. Host, user, and database default to the values shown; an explicitly configured empty password is passed through as-is. Existing shell environment variables take precedence over `.env`.
+Do not commit `.env`.
 
-Use a dedicated MySQL account for shared deployments rather than the local `root` default. Runtime operations need SELECT/INSERT/UPDATE on the application tables and SELECT on the view. Keep `.env` out of Git; `.env.example` contains no credentials.
-
-### 4. Populate the global problemset
+### 4. Import the Codeforces problem catalog
 
 ```bash
 python problemset_import.py
 ```
 
-This imports contest metadata, rated/unrated problems, topic links, and solved counts. It is required for a useful recommendation catalog and era/popularity information. Rerun it periodically to refresh the catalog; it is not automatically scheduled.
+This loads global problem metadata, topics, contest information, ratings, and solved counts.
 
-### 5. Start the dashboard
+### 5. Import C2Ladders curated frequency data
+
+Run this after the problem catalog exists:
+
+```bash
+python classic_import.py
+```
+
+The importer matches C2Ladders entries against Codeforces problems already stored in the database and upserts their frequency values. It is safe to rerun.
+
+### 6. Start the app
 
 ```bash
 streamlit run app.py
 ```
 
-Open the local URL printed by Streamlit. Enter a **Codeforces Handle**, press **Load / Refresh Profile**, and wait for **Profile ready**. Use **Previously Loaded Profiles** to switch users. To refresh a selected profile, enter that handle in the input and press the same button.
+Enter a Codeforces handle and press **Enter** or click **Analyze profile**.
 
-The importer validates the handle before database writes, reuses existing problems/topics, and commits a profile refresh atomically. Repeated imports do not duplicate rows and update existing verdicts. The displayed imported count includes both new and existing submissions processed.
-
-Optional terminal profile import:
+You can also import a profile directly from the terminal:
 
 ```bash
 python cf_import.py
 ```
 
-## Database design
-
-| Object | Purpose |
-| --- | --- |
-| `users` | Unique Codeforces handles with internal IDs |
-| `problems` | Unique platform/external IDs, difficulty and contest metadata, solved counts |
-| `submissions` | Codeforces submission IDs, user/problem foreign keys, verdicts and timestamps |
-| `topics` | Unique topic names |
-| `problem_topics` | Many-to-many problem/topic links |
-| `classic_problems` | Optional curated membership and source provenance |
-| `topic_stats` | View of distinct attempted/solved problems, success rate and wrong-submission totals per user/topic |
-
-Foreign keys enforce relationships. Unique keys make importer upserts idempotent. Submission indexes support per-user analytics and solved-problem exclusion. New submission timestamps are stored as UTC without a timezone suffix.
-
-## How recommendations work
-
-For overall success rate `r`, topic solved count `s`, and topic attempt count `a`:
-
-```text
-r = overall_solved / overall_attempted (or 0.5 with no attempts)
-smoothed_success = (s + 8*r) / (a + 8)
-weakness = 100 * (1 - smoothed_success)
-```
-
-Era adjustment compares median ratings within the same contest group and problem index against a 2024-and-later baseline. Median differences are clipped to [-300, 300], shrunk by `n/(n+30)`, subtracted from the official rating, and rounded to the nearest 50. This is a historical normalization heuristic, not a measurement of true difficulty.
-
-The challenge estimate is `p = 1 / (1 + 10**((effective_rating - training_rating)/400))`. It is an Elo-style heuristic, **not a calibrated ML solve-probability model**. Smart Picks target `p = 0.40`, combining weakness match (55%), difficulty fit (35%), and classic/popularity score (10%). At most two matching topic weaknesses contribute; up to 15 Smart Picks are returned.
-
-QuickSolve targets `training_rating - 300`; DeepThink targets `training_rating + 300`. Both use a +/-150 window, combine distance fit with the quality signal, prioritize curated membership when present, and return up to five problems. QuickSolve is not clamped to 800; low-rated profiles may have no problems in its window.
-
-Solved problems and problems without ratings/topics are excluded. If the user is unrated or the rating request fails, 1200 is used as a fallback training rating and the UI explicitly explains that fallback.
-
-### Classic problems
-
-No curated list is bundled. A fresh schema leaves `classic_problems` empty; popularity/solved counts provide the fallback quality signal. Curated-list ingestion is an optional future extension. Existing manually curated rows remain supported, including their `source` field. This project does not scrape third-party classic lists.
-
-## Custom LRU cache
-
-`lru_cache.py` implements a hashmap/dictionary plus a doubly linked list, with expected O(1) `get` and `put` and least-recently-used eviction. An `RLock` protects cache operations.
-
-The 10-entry cache lives in the recommender process. It stores the training rating and recommendation/weakness DataFrames. Keys include user ID, rating, rating-fallback status, and database aggregates covering submissions, verdicts, problems, and classic counts. A frontend refresh bypasses lookup. Rating fallback explanations travel with the weakness DataFrame metadata, preserving the five-value recommendation return interface.
-
-Streamlit sessions within one process share entries and metrics. Separate processes have separate caches. Restarting clears entries and counters; MySQL data persists. Explicit bypasses do not count as cache hits or misses. The rate lookup and version queries still run before a normal cache hit.
+---
 
 ## Project layout
 
 ```text
-app.py                Streamlit UI
-cf_api.py             Shared profile/rating API client
-cf_import.py          Reusable profile importer and CLI
-problemset_import.py  Global problemset/metadata importer
-recommender.py        Recommendation rules and cache integration
-lru_cache.py          Custom LRU implementation
-db.py                 Shared MySQL configuration and DataFrame query helper
-schema.sql            Reproducible MySQL schema
-requirements.txt      Tested runtime dependency versions
-.env.example          Credential-free configuration template
+app.py                Streamlit UI and dashboard
+cf_api.py             Shared Codeforces API client
+cf_import.py          Per-user profile/submission importer
+problemset_import.py  Global Codeforces problem catalog importer
+classic_import.py     C2Ladders curated-frequency importer
+recommender.py        Weakness analysis and recommendation logic
+lru_cache.py          Custom O(1) LRU cache
+db.py                 MySQL connection/query helper
+schema.sql            Database schema and topic_stats view
+requirements.txt      Python dependencies
+.env.example          Environment variable template
 ```
 
-## Limitations and future work
+---
 
-- Cache aggregates do not detect every in-place metadata/tag/classic-list edit. Restart Streamlit after a global catalog update to ensure fresh recommendations. Authoritative database revision tracking is future work.
-- Initial profile imports fetch the full public history and can take time. API outages or rate limits may require retrying. The global importer currently uses direct requests rather than the shared profile client.
-- Newly encountered profile problems may lack era/popularity metadata until a global import supplies it.
-- There is no authentication or per-viewer profile ownership. Shared deployment needs access controls; the profile list and cache metrics are process/database-wide.
-- Handle renames, nonstandard/Gym problem links, historical timestamp normalization, and concurrent-import retries need further work.
-- The global importer commits in batches; a failed run can leave a partially refreshed catalog and can be rerun.
-- There is no scheduled synchronization, curated-list ingestion, or calibrated prediction model.
-- Restart Streamlit after changing imported module interfaces during development.
+## Deployment
+
+The current V1 is deployed on Railway using two services:
+
+```text
+CPCompass Streamlit service
+        │
+        └── Railway private network ──> Railway MySQL service
+```
+
+The application reads database credentials from environment variables. Railway's MySQL volume persists data independently of application redeploys.
+
+GitHub pushes to the deployment branch can trigger application rebuilds, while database schema/data changes must be applied separately to the persistent MySQL database.
+
+---
+
+## Current limitations
+
+- Recommendation scores are heuristics rather than calibrated ML predictions.
+- Era adjustment depends on historical grouping and available sample sizes.
+- C2Ladders frequency is an external curated signal and is not generated by CPCompass itself.
+- Global Codeforces and C2 imports are currently manual rather than scheduled.
+- Initial profile imports can take time for users with large submission histories.
+- The LRU cache is process-local rather than distributed.
+- There is currently no authentication or profile ownership system.
+- Newly encountered problems can lack complete metadata until the global catalog is refreshed.
+
+---
+
+## Possible future work
+
+- automated daily problemset/C2 synchronization;
+- MySQL indexing experiments with `EXPLAIN` and query-performance benchmarks;
+- B+ tree / hash-index simulation for database internals exploration;
+- distributed caching with Redis for multi-instance deployment;
+- stronger ranking evaluation using historical solve outcomes;
+- richer training-history and progress visualizations.
+
+---
+
+## Author
+
+Created by **EqualCell**.
+
+- Codeforces: https://codeforces.com/profile/EqualCell
+- GitHub: https://github.com/EqualCell
+
+CPCompass is an independent project and is not affiliated with Codeforces or C2Ladders.
