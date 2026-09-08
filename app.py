@@ -18,7 +18,7 @@ st.set_page_config(
 
 
 # --------------------------------------------------
-# STYLING
+# THEME
 # --------------------------------------------------
 
 st.markdown(
@@ -27,104 +27,172 @@ st.markdown(
     :root {
         --bg: #07090d;
         --panel: #0d1117;
-        --panel-2: #111827;
-        --border: rgba(255,255,255,0.08);
-        --text: #f3f4f6;
+        --panel-soft: #111827;
+        --border: rgba(255,255,255,0.085);
+        --border-strong: rgba(139,92,246,0.28);
+        --text: #f8fafc;
         --muted: #94a3b8;
         --accent: #8b5cf6;
-        --accent-2: #22d3ee;
+        --accent2: #22d3ee;
     }
 
     html, body, [data-testid="stAppViewContainer"] {
-        background: var(--bg);
+        background:
+            radial-gradient(circle at 80% -10%, rgba(139,92,246,0.14), transparent 34rem),
+            radial-gradient(circle at 15% 5%, rgba(34,211,238,0.08), transparent 27rem),
+            var(--bg);
         color: var(--text);
     }
 
-    [data-testid="stHeader"] {
-        background: transparent;
-    }
-
-    [data-testid="stToolbar"] {
-        right: 1rem;
-    }
+    [data-testid="stHeader"] { background: transparent; }
+    [data-testid="stToolbar"] { right: 1rem; }
 
     .block-container {
         max-width: 1240px;
-        padding-top: 2.2rem;
+        padding-top: 1.8rem;
         padding-bottom: 4rem;
     }
 
+    .topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .brand-mini {
+        color: #dbeafe;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+    }
+
+    .creator-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .45rem .72rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(13,17,23,.72);
+        color: var(--muted) !important;
+        text-decoration: none !important;
+        font-size: .82rem;
+        transition: .18s ease;
+    }
+
+    .creator-chip:hover {
+        border-color: rgba(34,211,238,.38);
+        color: #e2e8f0 !important;
+        transform: translateY(-1px);
+    }
+
     .hero {
-        padding: 1.6rem 0 1.2rem 0;
+        padding: 1.25rem 0 1.45rem 0;
     }
 
     .hero-kicker {
-        color: var(--accent-2);
+        color: var(--accent2);
         text-transform: uppercase;
-        letter-spacing: 0.16em;
-        font-size: 0.72rem;
-        font-weight: 700;
-        margin-bottom: 0.55rem;
+        letter-spacing: .17em;
+        font-size: .7rem;
+        font-weight: 800;
+        margin-bottom: .58rem;
     }
 
     .hero-title {
-        font-size: clamp(2.4rem, 6vw, 4.8rem);
-        line-height: 0.95;
-        font-weight: 800;
-        letter-spacing: -0.055em;
+        font-size: clamp(2.7rem, 6vw, 5.2rem);
+        line-height: .94;
+        font-weight: 850;
+        letter-spacing: -.06em;
         margin: 0;
-        background: linear-gradient(90deg, #ffffff 10%, #c4b5fd 55%, #67e8f9 100%);
+        background: linear-gradient(90deg, #fff 8%, #ddd6fe 55%, #67e8f9 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .hero-copy {
         color: var(--muted);
-        max-width: 720px;
-        margin-top: 0.9rem;
+        max-width: 760px;
+        margin-top: 1rem;
         font-size: 1.03rem;
-        line-height: 1.65;
+        line-height: 1.68;
+    }
+
+    .micro-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        margin-top: 1rem;
+    }
+
+    .micro-pill {
+        border: 1px solid var(--border);
+        background: rgba(13,17,23,.58);
+        color: #a8b3c4;
+        border-radius: 999px;
+        padding: .38rem .65rem;
+        font-size: .76rem;
     }
 
     .section-label {
-        color: #cbd5e1;
-        font-size: 0.82rem;
+        color: #a5b4fc;
+        font-size: .74rem;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-weight: 700;
-        margin-top: 1.7rem;
-        margin-bottom: 0.25rem;
+        letter-spacing: .15em;
+        font-weight: 800;
+        margin-top: 2rem;
+        margin-bottom: .28rem;
     }
 
     .section-title {
-        font-size: 1.65rem;
-        font-weight: 720;
-        letter-spacing: -0.025em;
-        margin: 0 0 0.85rem 0;
+        font-size: 1.68rem;
+        font-weight: 760;
+        letter-spacing: -.03em;
+        margin: 0 0 .85rem 0;
     }
 
+    .profile-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: .15rem 0 .75rem 0;
+        color: var(--muted);
+        font-size: .9rem;
+    }
+
+    .profile-link {
+        color: #c4b5fd !important;
+        font-weight: 700;
+        text-decoration: none !important;
+    }
+
+    .profile-link:hover { color: #67e8f9 !important; }
+
     div[data-testid="stForm"] {
-        background: linear-gradient(180deg, rgba(17,24,39,0.94), rgba(13,17,23,0.94));
-        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(17,24,39,.91), rgba(13,17,23,.91));
+        border: 1px solid var(--border-strong);
         border-radius: 18px;
-        padding: 0.35rem 0.45rem 0.55rem 0.45rem;
-        box-shadow: 0 14px 45px rgba(0,0,0,0.28);
+        padding: .35rem .45rem .55rem .45rem;
+        box-shadow: 0 18px 60px rgba(0,0,0,.27);
     }
 
     div[data-testid="stMetric"] {
-        background: linear-gradient(180deg, rgba(17,24,39,0.92), rgba(13,17,23,0.92));
+        background: linear-gradient(180deg, rgba(17,24,39,.90), rgba(13,17,23,.88));
         border: 1px solid var(--border);
         border-radius: 15px;
-        padding: 0.85rem 1rem;
+        padding: .9rem 1rem;
+        transition: .18s ease;
     }
 
-    div[data-testid="stMetricLabel"] {
-        color: var(--muted);
+    div[data-testid="stMetric"]:hover {
+        border-color: rgba(139,92,246,.32);
+        transform: translateY(-1px);
     }
 
-    div[data-testid="stMetricValue"] {
-        color: #f8fafc;
-    }
+    div[data-testid="stMetricLabel"] { color: var(--muted); }
+    div[data-testid="stMetricValue"] { color: #f8fafc; }
 
     div[data-testid="stDataFrame"] {
         border: 1px solid var(--border);
@@ -135,16 +203,17 @@ st.markdown(
     [data-testid="stExpander"] {
         border: 1px solid var(--border);
         border-radius: 14px;
-        background: rgba(13,17,23,0.72);
+        background: rgba(13,17,23,.68);
     }
 
     button[kind="primary"] {
         border-radius: 10px !important;
-        font-weight: 700 !important;
+        font-weight: 750 !important;
+        box-shadow: 0 8px 26px rgba(139,92,246,.18);
     }
 
     div[data-baseweb="tab-list"] {
-        gap: 0.4rem;
+        gap: .45rem;
         border-bottom: 1px solid var(--border);
     }
 
@@ -154,15 +223,31 @@ st.markdown(
         padding-right: 1rem;
     }
 
-    hr {
-        border-color: var(--border) !important;
+    hr { border-color: var(--border) !important; }
+
+    .footer {
+        margin-top: 3rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        color: #64748b;
+        font-size: .82rem;
     }
 
-    .active-profile {
-        color: var(--muted);
-        font-size: 0.92rem;
-        margin-top: 0.15rem;
-        margin-bottom: 0.65rem;
+    .footer a {
+        color: #a78bfa !important;
+        text-decoration: none !important;
+        font-weight: 700;
+    }
+
+    .footer a:hover { color: #67e8f9 !important; }
+
+    @media (max-width: 700px) {
+        .topline, .footer, .profile-strip { align-items: flex-start; flex-direction: column; }
+        .block-container { padding-top: 1rem; }
     }
     </style>
     """,
@@ -171,30 +256,48 @@ st.markdown(
 
 
 # --------------------------------------------------
-# HERO + PROFILE SEARCH
+# HERO
 # --------------------------------------------------
 
 st.markdown(
     """
+    <div class="topline">
+        <div class="brand-mini">🧭 CPCompass</div>
+        <a class="creator-chip" href="https://codeforces.com/profile/EqualCell" target="_blank">
+            Created by <strong>EqualCell ↗</strong>
+        </a>
+    </div>
+
     <div class="hero">
         <div class="hero-kicker">Codeforces training intelligence</div>
-        <h1 class="hero-title">CPCompass</h1>
+        <h1 class="hero-title">Practice with direction.</h1>
         <div class="hero-copy">
-            Turn your submission history into focused practice: weakness-aware picks,
-            calibrated difficulty, and curated problem recommendations.
+            CPCompass turns your Codeforces history into a focused training plan using
+            weakness analysis, era-aware difficulty and curated problem quality signals.
+        </div>
+        <div class="micro-row">
+            <span class="micro-pill">Bayesian weakness scoring</span>
+            <span class="micro-pill">Era-adjusted ratings</span>
+            <span class="micro-pill">C2Ladders quality signal</span>
+            <span class="micro-pill">LRU-cached recommendations</span>
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
+
+# --------------------------------------------------
+# PROFILE SEARCH
+# --------------------------------------------------
+
 with st.form("profile_form", clear_on_submit=False):
-    input_col, button_col = st.columns([4.6, 1.4], vertical_alignment="bottom")
+    input_col, button_col = st.columns([4.7, 1.3], vertical_alignment="bottom")
 
     with input_col:
         handle_input = st.text_input(
             "Codeforces handle",
-            placeholder="Enter a handle, e.g. tourist",
+            placeholder="Enter a Codeforces handle",
             label_visibility="collapsed",
         )
 
@@ -205,7 +308,6 @@ with st.form("profile_form", clear_on_submit=False):
             use_container_width=True,
         )
 
-# A form submit is triggered by clicking the button or pressing Enter in the input.
 imported_user_id = None
 
 if submitted:
@@ -234,13 +336,23 @@ active_user_id = st.session_state.get("active_user_id")
 active_handle = st.session_state.get("active_handle")
 
 if active_user_id is None or active_handle is None:
-    st.markdown("<div style='height: 1.2rem'></div>", unsafe_allow_html=True)
-    st.info("Enter a Codeforces handle above. Press Enter or click Analyze profile to begin.")
+    st.markdown("<div style='height: .8rem'></div>", unsafe_allow_html=True)
+    st.info("Enter a handle and press Enter — or click Analyze profile — to build a training plan.")
+
+    st.markdown(
+        """
+        <div class="footer">
+            <span>CPCompass · Competitive programming analytics</span>
+            <span>Built by <a href="https://codeforces.com/profile/EqualCell" target="_blank">EqualCell ↗</a></span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.stop()
 
 
 # --------------------------------------------------
-# DATABASE + PROFILE VALIDATION
+# DATABASE + PROFILE
 # --------------------------------------------------
 
 conn = get_connection()
@@ -262,30 +374,28 @@ try:
     selected_handle = str(profile_df.iloc[0]["handle"])
     st.session_state["active_handle"] = selected_handle
 
+    st.markdown('<div class="section-label">Profile overview</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Your training snapshot</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="section-label">Profile overview</div>',
+        f"""
+        <div class="profile-strip">
+            <span>Active profile · <a class="profile-link" href="https://codeforces.com/profile/{selected_handle}" target="_blank">@{selected_handle} ↗</a></span>
+            <span>Recommendations exclude problems already solved with AC.</span>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
-    st.markdown(
-        '<div class="section-title">Your training snapshot</div>',
-        unsafe_allow_html=True,
-    )
-    st.caption(f"Active profile: @{selected_handle}")
 
 
     # --------------------------------------------------
-    # BASIC STATS
+    # STATS
     # --------------------------------------------------
 
     stats = read_sql(
         """
         SELECT
             COUNT(DISTINCT problem_id) AS attempted,
-            COUNT(
-                DISTINCT CASE
-                    WHEN verdict = 'OK' THEN problem_id
-                END
-            ) AS solved,
+            COUNT(DISTINCT CASE WHEN verdict = 'OK' THEN problem_id END) AS solved,
             COUNT(*) AS submissions
         FROM submissions
         WHERE user_id = %s;
@@ -301,17 +411,11 @@ try:
 
 
     # --------------------------------------------------
-    # RECOMMENDATION ENGINE
+    # RECOMMENDATIONS
     # --------------------------------------------------
 
     with st.spinner("Building your training plan..."):
-        (
-            user_rating,
-            weakness_df,
-            smart_df,
-            quick_df,
-            deep_df,
-        ) = build_recommendations(
+        user_rating, weakness_df, smart_df, quick_df, deep_df = build_recommendations(
             conn,
             user_id,
             selected_handle,
@@ -332,26 +436,15 @@ try:
 
 
     # --------------------------------------------------
-    # TOPIC ANALYTICS
+    # ANALYTICS
     # --------------------------------------------------
 
-    st.markdown(
-        '<div class="section-label">Analytics</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div class="section-title">Where your practice is leaking points</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="section-label">Analytics</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Where your practice is leaking points</div>', unsafe_allow_html=True)
 
     topic_df = read_sql(
         """
-        SELECT
-            topic,
-            attempted,
-            solved,
-            success_rate,
-            wrong_submissions
+        SELECT topic, attempted, solved, success_rate, wrong_submissions
         FROM topic_stats
         WHERE user_id = %s
           AND attempted >= 5
@@ -366,21 +459,13 @@ try:
     with left_analytics:
         if not weakness_df.empty:
             weakness_display = weakness_df[
-                [
-                    "topic",
-                    "attempted",
-                    "solved",
-                    "smoothed_success",
-                    "weakness_score",
-                ]
+                ["topic", "attempted", "solved", "smoothed_success", "weakness_score"]
             ].copy()
 
             weakness_display["smoothed_success"] = (
                 weakness_display["smoothed_success"] * 100
             ).round(1)
-            weakness_display["weakness_score"] = weakness_display[
-                "weakness_score"
-            ].round(1)
+            weakness_display["weakness_score"] = weakness_display["weakness_score"].round(1)
 
             weakness_display = weakness_display.head(8).rename(
                 columns={
@@ -392,11 +477,7 @@ try:
                 }
             )
 
-            st.dataframe(
-                weakness_display,
-                width="stretch",
-                hide_index=True,
-            )
+            st.dataframe(weakness_display, width="stretch", hide_index=True)
         else:
             st.info("Not enough data for weakness analysis yet.")
 
@@ -413,7 +494,7 @@ try:
 
 
     # --------------------------------------------------
-    # TABLE HELPERS
+    # HELPERS
     # --------------------------------------------------
 
     def prepare_problem_table(df):
@@ -421,15 +502,8 @@ try:
             return df
 
         result = df.copy()
-
-        result["Tags"] = result["tags"].apply(
-            lambda tags: ", ".join(tags)
-        )
-
-        result["Predicted Solve %"] = (
-            result["predicted_solve"] * 100
-        ).round(1)
-
+        result["Tags"] = result["tags"].apply(lambda tags: ", ".join(tags))
+        result["Predicted Solve %"] = (result["predicted_solve"] * 100).round(1)
         result["Problem Link"] = result.apply(
             lambda row: (
                 "https://codeforces.com/problemset/problem/"
@@ -438,9 +512,7 @@ try:
             ),
             axis=1,
         )
-
         return result
-
 
     def show_mode_table(df, empty_message):
         if df.empty:
@@ -449,20 +521,14 @@ try:
 
         table = prepare_problem_table(df)
         display = table[
-            [
-                "title",
-                "official_rating",
-                "effective_rating",
-                "solved_count",
-                "Problem Link",
-            ]
+            ["title", "official_rating", "effective_rating", "solved_count", "Problem Link"]
         ].copy()
 
         display = display.rename(
             columns={
                 "title": "Problem",
                 "official_rating": "Official",
-                "effective_rating": "Adjusted",
+                "effective_rating": "Era-adjusted",
                 "solved_count": "Solvers",
             }
         )
@@ -472,42 +538,54 @@ try:
             width="stretch",
             hide_index=True,
             column_config={
-                "Problem Link": st.column_config.LinkColumn(
-                    "Open",
-                    display_text="Solve ↗",
-                )
+                "Official": st.column_config.NumberColumn(
+                    "Official",
+                    help="The original Codeforces difficulty rating.",
+                    format="%d",
+                ),
+                "Era-adjusted": st.column_config.NumberColumn(
+                    "Era-adjusted",
+                    help="A modern-equivalent training estimate based on how the same contest slot is rated across eras.",
+                    format="%d",
+                ),
+                "Problem Link": st.column_config.LinkColumn("Open", display_text="Solve ↗"),
             },
         )
 
 
     # --------------------------------------------------
-    # RECOMMENDATIONS
+    # TRAINING PLAN
     # --------------------------------------------------
 
-    st.markdown(
-        '<div class="section-label">Training plan</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div class="section-title">What you should solve next</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="section-label">Training plan</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">What you should solve next</div>', unsafe_allow_html=True)
 
-    smart_tab, quick_tab, deep_tab = st.tabs(
-        ["🎯 Smart Picks", "⚡ QuickSolve", "🧠 DeepThink"]
-    )
+    with st.expander("What does Era-adjusted rating mean?"):
+        st.markdown(
+            """
+            **Official rating** is the Codeforces number attached to the problem. **Era-adjusted rating** is CPCompass's
+            training estimate for how that problem compares with problems in the same contest slot today.
+
+            CPCompass groups problems by contest type and index (for example, Div. 2 C), compares the median rating in
+            that era with the median for recent contests, then applies a confidence-shrunk correction.
+
+            So the adjusted value can go **either up or down**. If an older era's Div. 2 C problems were typically rated
+            lower than recent Div. 2 C problems, an old 1600 may be treated as roughly 1650/1700 in modern training terms.
+            The correction is capped and shrunk when the sample is small — it is a heuristic, not an official Codeforces rating.
+            """
+        )
+
+    smart_tab, quick_tab, deep_tab = st.tabs(["🎯 Smart Picks", "⚡ QuickSolve", "🧠 DeepThink"])
 
     with smart_tab:
         st.caption(
-            "Weakness-aware recommendations combining topic fit, era-adjusted "
-            "difficulty, challenge fit, and curated quality."
+            "Weakness-aware recommendations combining topic fit, era-adjusted difficulty, challenge fit and curated quality."
         )
 
         if smart_df.empty:
             st.info("No Smart Picks available yet. Build a little more topic history first.")
         else:
             smart = prepare_problem_table(smart_df)
-
             smart_display = smart[
                 [
                     "title",
@@ -520,15 +598,12 @@ try:
                 ]
             ].copy()
 
-            smart_display["recommendation_score"] = smart_display[
-                "recommendation_score"
-            ].round(1)
-
+            smart_display["recommendation_score"] = smart_display["recommendation_score"].round(1)
             smart_display = smart_display.rename(
                 columns={
                     "title": "Problem",
                     "official_rating": "Official",
-                    "effective_rating": "Adjusted",
+                    "effective_rating": "Era-adjusted",
                     "recommendation_score": "Score",
                 }
             )
@@ -538,32 +613,31 @@ try:
                 width="stretch",
                 hide_index=True,
                 column_config={
-                    "Problem Link": st.column_config.LinkColumn(
-                        "Open",
-                        display_text="Solve ↗",
-                    )
+                    "Official": st.column_config.NumberColumn(
+                        "Official",
+                        help="The original Codeforces difficulty rating.",
+                        format="%d",
+                    ),
+                    "Era-adjusted": st.column_config.NumberColumn(
+                        "Era-adjusted",
+                        help="CPCompass's modern-equivalent training estimate. It can be above or below the official rating.",
+                        format="%d",
+                    ),
+                    "Problem Link": st.column_config.LinkColumn("Open", display_text="Solve ↗"),
                 },
             )
 
     with quick_tab:
         st.caption(
-            f"Fast, high-quality reps around {user_rating - 300} rating, "
-            "with C2Ladders frequency used as a curated quality signal."
+            f"Fast, high-quality reps around {user_rating - 300} rating, with C2Ladders frequency used as a curated quality signal."
         )
-        show_mode_table(
-            quick_df,
-            "No QuickSolve problems found in the current target window.",
-        )
+        show_mode_table(quick_df, "No QuickSolve problems found in the current target window.")
 
     with deep_tab:
         st.caption(
-            f"Stretch problems around {user_rating + 300} rating for deliberate, "
-            "longer-form practice."
+            f"Stretch problems around {user_rating + 300} rating for deliberate, longer-form practice."
         )
-        show_mode_table(
-            deep_df,
-            "No DeepThink problems found in the current target window.",
-        )
+        show_mode_table(deep_df, "No DeepThink problems found in the current target window.")
 
 
     # --------------------------------------------------
@@ -572,21 +646,29 @@ try:
 
     with st.expander("System & recommendation engine"):
         cache_stats = get_cache_stats()
-
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Cache Hits", cache_stats["hits"])
         c2.metric("Cache Misses", cache_stats["misses"])
         c3.metric("Hit Rate", f'{cache_stats["hit_rate"]}%')
-        c4.metric(
-            "LRU Entries",
-            f'{cache_stats["size"]}/{cache_stats["capacity"]}',
-        )
-
+        c4.metric("LRU Entries", f'{cache_stats["size"]}/{cache_stats["capacity"]}')
         st.caption(
-            "Recommendations are cached in the running app process. "
-            "A profile refresh bypasses the cached result."
+            "Recommendations are cached in the running app process. A profile refresh bypasses the cached result."
         )
 
+
+    # --------------------------------------------------
+    # FOOTER
+    # --------------------------------------------------
+
+    st.markdown(
+        """
+        <div class="footer">
+            <span>CPCompass · Competitive programming analytics & training</span>
+            <span>Created by <a href="https://codeforces.com/profile/EqualCell" target="_blank">EqualCell ↗</a></span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 finally:
     conn.close()
