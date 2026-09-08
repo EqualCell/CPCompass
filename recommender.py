@@ -61,12 +61,14 @@ def get_user_data_version(
 
         cursor.execute(
             """
-            SELECT COUNT(*)
+            SELECT
+                COUNT(*),
+                COALESCE(SUM(frequency), 0)
             FROM classic_problems
             """
         )
 
-        classic_count = cursor.fetchone()[0]
+        classic_count, classic_frequency_version = cursor.fetchone()
 
         cursor.execute(
             "SELECT COALESCE(SUM(CRC32(CONCAT(id, ':', COALESCE(verdict, '')))), 0) "
@@ -86,6 +88,7 @@ def get_user_data_version(
         problem_count,
         max_problem_id,
         classic_count,
+        int(classic_frequency_version),
         verdict_version
     )
 
@@ -419,7 +422,18 @@ def get_candidates(
                     THEN 1
                     ELSE 0
                 END
-            ) AS is_classic
+            ) AS is_classic,
+
+            COALESCE(
+                MAX(
+                    CASE
+                        WHEN cp.source = 'C2Ladders'
+                        THEN cp.frequency
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS c2_frequency
 
         FROM problems p
 
@@ -470,9 +484,9 @@ def get_candidates(
 
 
     if df.empty:
-        for column in ("effective_rating", "popularity_score", "classic_score",
-                       "weakness_match", "predicted_solve", "difficulty_fit",
-                       "recommendation_score", "mode_score"):
+        for column in ("effective_rating", "popularity_score", "c2_score",
+                       "classic_score", "weakness_match", "predicted_solve",
+                       "difficulty_fit", "recommendation_score", "mode_score"):
             df[column] = pd.Series(dtype=float)
         return df
 
@@ -556,20 +570,32 @@ def get_candidates(
     )
 
 
-    # Actual curated classic = 100.
-    # Otherwise popularity provides fallback.
+    # ------------------------------------------------
+    # Curated / classic score
+    # ------------------------------------------------
+    # C2Ladders frequency is log-normalized so that a few
+    # very large frequencies do not dominate the ranking.
+    max_c2_frequency = max(
+        1,
+        df["c2_frequency"].max()
+    )
+
+    df["c2_score"] = (
+        df["c2_frequency"]
+        .apply(math.log1p)
+        /
+        math.log1p(max_c2_frequency)
+        *
+        100
+    )
+
+    # Prefer the C2 signal when available.
+    # Otherwise fall back to Codeforces popularity.
     df["classic_score"] = df.apply(
-
         lambda row:
-
-            100
-
-            if row["is_classic"] == 1
-
-            else 0.70
-                 *
-                 row["popularity_score"],
-
+            row["c2_score"]
+            if row["c2_frequency"] > 0
+            else 0.70 * row["popularity_score"],
         axis=1
     )
 
